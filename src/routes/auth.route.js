@@ -1,10 +1,10 @@
 import express from "express";
 import trimRequest from "trim-request";
 import {
-  register,
   login,
   logout,
   refreshToken,
+  register,
 } from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 

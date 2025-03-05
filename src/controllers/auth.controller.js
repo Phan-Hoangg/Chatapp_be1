@@ -5,6 +5,7 @@ import { findUser } from "../services/user.service.js";
 
 export const register = async (req, res, next) => {
   try {
+    console.log(req.body);
     const { name, email, picture, status, password } = req.body;
     const newUser = await createUser({
       name,
@@ -13,8 +14,26 @@ export const register = async (req, res, next) => {
       status,
       password,
     });
+    const access_token = await generateToken(
+      { userId: newUser._id },
+      "1d",
+      process.env.ACCESS_TOKEN_SECRET
+    );
+    const refresh_token = await generateToken(
+      { userId: newUser._id },
+      "30d",
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    res.cookie("refreshtoken", refresh_token, {
+      httpOnly: true,
+      path: "/api/v1/auth/refreshtoken",
+      maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
+    });
+
     res.json({
-      message: "Đăng ký thành công.",
+      message: "Registration successful.",
+      access_token,
       user: {
         _id: newUser._id,
         name: newUser.name,
@@ -33,7 +52,6 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await signUser(email, password);
-
     const access_token = await generateToken(
       { userId: user._id },
       "1d",
@@ -45,14 +63,15 @@ export const login = async (req, res, next) => {
       process.env.REFRESH_TOKEN_SECRET
     );
 
-    res.cookie("refreshToken", refresh_token, {
+    res.cookie("refreshtoken", refresh_token, {
       httpOnly: true,
-      path: "/api/v1/auth/refreshToken",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+      path: "/api/v1/auth/refreshtoken",
+      maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
     });
 
     res.json({
-      message: "Đăng ký thành công.",
+      message: "Login successful.",
+      access_token,
       user: {
         _id: user._id,
         name: user.name,
@@ -69,8 +88,10 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    res.clearCookie("refreshToken", { path: "/api/v1/auth/refreshToken" });
-    res.json({ message: "Đăng xuất thành công." });
+    res.clearCookie("refreshtoken", { path: "/api/v1/auth/refreshtoken" });
+    res.json({
+      message: "Logged out successfully.",
+    });
   } catch (error) {
     next(error);
   }
@@ -78,21 +99,23 @@ export const logout = async (req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
   try {
-    const refresh_token = req.cookies.refreshToken;
-    if (!refresh_token)
-      throw createHttpError.Unauthorized("vui lòng đăng nhập.");
-    const check = await verifyToken(
+    const refresh_token = req.cookies.refreshtoken;
+    if (!refresh_token) throw createHttpError.Unauthorized("Please login.");
+
+    const decoded = await verifyToken(
       refresh_token,
       process.env.REFRESH_TOKEN_SECRET
     );
-    const user = await findUser(check.userId);
+    const user = await findUser(decoded.userId);
+
     const access_token = await generateToken(
       { userId: user._id },
       "1d",
       process.env.ACCESS_TOKEN_SECRET
     );
+
     res.json({
-      message: "Đăng nhập thành công.",
+      access_token,
       user: {
         _id: user._id,
         name: user.name,

@@ -7,3 +7,5 @@ export const findUser = async (userId) => {
     throw createHttpError.BadRequest("Vui lòng điền đầy đủ thông tin.");
   return user;
 };
+
+
