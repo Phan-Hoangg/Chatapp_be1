@@ -6,12 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node ./src/index.js",
-    "dev": "cross-env NODE_ENV=development nodemon ./src/index.js",
-    "postinstall": "npm rebuild bcrypt --build-from-source"
+    "dev": "cross-env NODE_ENV=development nodemon ./src/index.js"
   },
   "dependencies": {
     "@testing-library/user-event": "^14.6.1",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
