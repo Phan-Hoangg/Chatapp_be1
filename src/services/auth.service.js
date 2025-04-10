@@ -18,11 +18,11 @@ export const createUser = async (userData) => {
   if (
     !validator.isLength(name, {
       min: 2,
-      max: 16,
+      max: 25,
     })
   ) {
     throw createHttpError.BadRequest(
-      "Tên của bạn phải nằm trong khoảng từ 2 đến 16 kí tự."
+      "Tên của bạn phải nằm trong khoảng từ 2 đến 25 kí tự."
     );
   }
 
@@ -82,6 +82,6 @@ export const signUser = async (email, password) => {
 
   if (!passwordMatches)
     throw createHttpError.NotFound("thông tin xác thực không hợp lệ.");
-  
+
   return user;
 };
